@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import { initContactsTable, getAllContacts, createContact } from "../db";
-import AddContactModal from "../components/AddContactModal";
+import { initContactsTable, getAllContacts, toggleFavorite } from "../db";
 
 export default function IndexPage() {
   const [contacts, setContacts] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
 
   const loadData = async () => {
     await initContactsTable();
@@ -17,10 +15,9 @@ export default function IndexPage() {
     loadData();
   }, []);
 
-  const addNewContact = async ({ name, phone, email }) => {
-    await createContact(name, phone, email);
-    await loadData();
-    setModalVisible(false);
+  const handleToggleFavorite = async (item) => {
+    await toggleFavorite(item.id, Number(item.favorite));
+    loadData();
   };
 
   const renderItem = ({ item }) => (
@@ -39,15 +36,22 @@ export default function IndexPage() {
         <Text style={{ color: "gray" }}>{item.phone}</Text>
       </View>
 
-      {Number(item.favorite) === 1 && (
-        <Text style={{ fontSize: 20, color: "#facc15" }}>★</Text>
-      )}
+      {/* Toggle favorite */}
+      <TouchableOpacity onPress={() => handleToggleFavorite(item)}>
+        <Text
+          style={{
+            fontSize: 24,
+            color: Number(item.favorite) === 1 ? "#facc15" : "#ccc",
+          }}
+        >
+          ★
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
-      {/* TITLE */}
       <Text
         style={{
           fontSize: 24,
@@ -60,45 +64,10 @@ export default function IndexPage() {
         Danh sách liên hệ
       </Text>
 
-      {/* Empty state */}
-      {contacts.length === 0 ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text style={{ fontSize: 18, color: "gray" }}>
-            Chưa có liên hệ nào.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={contacts}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-        />
-      )}
-
-      {/* Floating Button */}
-      <TouchableOpacity
-        onPress={() => setModalVisible(true)}
-        style={{
-          position: "absolute",
-          bottom: 30,
-          right: 30,
-          width: 55,
-          height: 55,
-          borderRadius: 30,
-          backgroundColor: "#2563eb",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontSize: 28, color: "white" }}>+</Text>
-      </TouchableOpacity>
-
-      <AddContactModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onSubmit={addNewContact}
+      <FlatList
+        data={contacts}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
       />
     </View>
   );

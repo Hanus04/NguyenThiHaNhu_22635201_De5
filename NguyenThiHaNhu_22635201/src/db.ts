@@ -77,3 +77,15 @@ export const createContact = async (name, phone, email) => {
     [name, phone, email, Date.now()]
   );
 };
+
+export const toggleFavorite = async (id, currentValue) => {
+  const db = await getDb();
+  const newValue = currentValue === 1 ? 0 : 1;
+
+  await db.runAsync(`UPDATE contacts SET favorite = ? WHERE id = ?`, [
+    newValue,
+    id,
+  ]);
+
+  return newValue;
+};
