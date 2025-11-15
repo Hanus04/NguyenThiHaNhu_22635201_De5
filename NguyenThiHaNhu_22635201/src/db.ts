@@ -69,3 +69,11 @@ export const getAllContacts = async () => {
     "SELECT * FROM contacts ORDER BY created_at DESC"
   );
 };
+export const createContact = async (name, phone, email) => {
+  const db = await getDb();
+  await db.runAsync(
+    `INSERT INTO contacts (name, phone, email, favorite, created_at)
+     VALUES (?, ?, ?, 0, ?)`,
+    [name, phone, email, Date.now()]
+  );
+};

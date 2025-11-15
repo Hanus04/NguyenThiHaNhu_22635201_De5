@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
-import { View, Text, FlatList } from "react-native";
-import { initContactsTable, getAllContacts } from "../db";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { initContactsTable, getAllContacts, createContact } from "../db";
+import AddContactModal from "../components/AddContactModal";
 
 export default function IndexPage() {
   const [contacts, setContacts] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const loadData = async () => {
+    await initContactsTable();
+    const data = await getAllContacts();
+    setContacts(data);
+  };
 
   useEffect(() => {
-    const load = async () => {
-      await initContactsTable(); // Tạo bảng + seed
-      const data = await getAllContacts();
-      setContacts(data);
-    };
-    load();
+    loadData();
   }, []);
+
+  const addNewContact = async ({ name, phone, email }) => {
+    await createContact(name, phone, email);
+    await loadData();
+    setModalVisible(false);
+  };
 
   const renderItem = ({ item }) => (
     <View
@@ -27,39 +36,69 @@ export default function IndexPage() {
     >
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 18, fontWeight: "600" }}>{item.name}</Text>
-        <Text style={{ color: "gray", marginTop: 2 }}>{item.phone}</Text>
+        <Text style={{ color: "gray" }}>{item.phone}</Text>
       </View>
+
+      {Number(item.favorite) === 1 && (
+        <Text style={{ fontSize: 20, color: "#facc15" }}>★</Text>
+      )}
     </View>
   );
 
-  if (contacts.length === 0) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 18, color: "gray" }}>
-          Chưa có liên hệ nào.
-        </Text>
-      </View>
-    );
-  }
-
   return (
-    <View style={{ flex: 1, backgroundColor: "white", paddingTop: 40 }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
+      {/* TITLE */}
       <Text
         style={{
           fontSize: 24,
-          fontWeight: "bold",
           textAlign: "center",
-          marginTop: 39,
-          marginBottom: 16,
+          fontWeight: "bold",
+          marginVertical: 16,
+          marginTop: 90,
         }}
       >
         Danh sách liên hệ
       </Text>
 
-      <FlatList
-        data={contacts}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
+      {/* Empty state */}
+      {contacts.length === 0 ? (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ fontSize: 18, color: "gray" }}>
+            Chưa có liên hệ nào.
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={contacts}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+        />
+      )}
+
+      {/* Floating Button */}
+      <TouchableOpacity
+        onPress={() => setModalVisible(true)}
+        style={{
+          position: "absolute",
+          bottom: 30,
+          right: 30,
+          width: 55,
+          height: 55,
+          borderRadius: 30,
+          backgroundColor: "#2563eb",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 28, color: "white" }}>+</Text>
+      </TouchableOpacity>
+
+      <AddContactModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={addNewContact}
       />
     </View>
   );
