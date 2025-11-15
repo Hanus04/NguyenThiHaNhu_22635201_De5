@@ -1,19 +1,31 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TextInput, Button, Alert } from "react-native";
+
+type EditContactModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  onSubmit: (data: {
+    id: number;
+    name: string;
+    phone: string;
+    email: string;
+  }) => void;
+  contact: any | null;
+};
 
 export default function EditContactModal({
   visible,
   onClose,
   onSubmit,
   contact,
-}) {
+}: EditContactModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
   useEffect(() => {
     if (contact) {
-      setName(contact.name);
+      setName(contact.name || "");
       setPhone(contact.phone || "");
       setEmail(contact.email || "");
     }
@@ -37,6 +49,8 @@ export default function EditContactModal({
       Alert.alert("Lỗi", "Email phải chứa ký tự @");
       return;
     }
+
+    if (!contact) return;
 
     onSubmit({
       id: contact.id,

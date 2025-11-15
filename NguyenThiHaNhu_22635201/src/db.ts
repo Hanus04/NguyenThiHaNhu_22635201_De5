@@ -102,3 +102,22 @@ export const deleteContact = async (id) => {
   const db = await getDb();
   await db.runAsync("DELETE FROM contacts WHERE id = ?", [id]);
 };
+export const insertContactIfNotExist = async (name, phone, email) => {
+  const db = await getDb();
+
+  // kiểm tra trùng phone
+  const existing = await db.getFirstAsync(
+    "SELECT * FROM contacts WHERE phone = ?",
+    [phone]
+  );
+
+  if (existing) return false; // trùng → bỏ qua
+
+  await db.runAsync(
+    `INSERT INTO contacts (name, phone, email, favorite, created_at)
+     VALUES (?, ?, ?, 0, ?)`,
+    [name, phone, email, Date.now()]
+  );
+
+  return true; // thêm mới thành công
+};
