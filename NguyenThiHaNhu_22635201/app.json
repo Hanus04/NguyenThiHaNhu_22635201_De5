@@ -15,5 +15,26 @@
     "expo-sqlite"
   ],
   "name": "NguyenThiHaNhu_22635201",
-  "slug": "NguyenThiHaNhu_22635201"
+  "slug": "NguyenThiHaNhu_22635201",
+  "extra": {
+    "router": {
+      "origin": "https://n"
+    },
+    "eas": {
+      "projectId": "a5cb01a8-cd6d-492b-b6b3-8a2e92e8e037"
+    }
+  },
+  "expo": {
+    "ios": {
+      "bundleIdentifier": "com.hanhu.NguyenThiHaNhu22635201",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e04634fb-e6e4-4a29-87c4-cd4742b1aa8e"
+      }
+    }
+  }
 }
