@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { View, Text, FlatList } from "react-native";
-import { initContactsTable, getAllContacts } from "../db";
+import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { getAllContacts } from "../db";
 
-export default function IndexPage() {
+export default function ContactsScreen() {
   const [contacts, setContacts] = useState([]);
 
   useEffect(() => {
     const load = async () => {
-      await initContactsTable(); // Tạo bảng + seed
       const data = await getAllContacts();
       setContacts(data);
     };
@@ -17,8 +16,7 @@ export default function IndexPage() {
   const renderItem = ({ item }) => (
     <View
       style={{
-        paddingVertical: 12,
-        paddingHorizontal: 16,
+        padding: 12,
         borderBottomWidth: 1,
         borderColor: "#e5e5e5",
         flexDirection: "row",
@@ -27,11 +25,17 @@ export default function IndexPage() {
     >
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 18, fontWeight: "600" }}>{item.name}</Text>
-        <Text style={{ color: "gray", marginTop: 2 }}>{item.phone}</Text>
+        {item.phone ? (
+          <Text style={{ color: "gray", marginTop: 2 }}>{item.phone}</Text>
+        ) : null}
       </View>
+      {Number(item.favorite) === 1 && (
+        <Text style={{ fontSize: 20, color: "#facc15" }}>★</Text>
+      )}
     </View>
   );
 
+  // Empty view
   if (contacts.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -43,23 +47,12 @@ export default function IndexPage() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white", paddingTop: 40 }}>
-      <Text
-        style={{
-          fontSize: 24,
-          fontWeight: "bold",
-          textAlign: "center",
-          marginTop: 39,
-          marginBottom: 16,
-        }}
-      >
-        Danh sách liên hệ
-      </Text>
-
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <FlatList
         data={contacts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
+        contentContainerStyle={{ paddingVertical: 10 }}
       />
     </View>
   );
