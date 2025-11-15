@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import { initContactsTable, getAllContacts, toggleFavorite } from "../db";
+import {
+  initContactsTable,
+  getAllContacts,
+  toggleFavorite,
+  updateContact,
+} from "../db";
+import EditContactModal from "../components/EditContactModal";
 
 export default function IndexPage() {
   const [contacts, setContacts] = useState([]);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
 
   const loadData = async () => {
     await initContactsTable();
@@ -14,6 +22,13 @@ export default function IndexPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Handle save when editing
+  const handleEditContact = async ({ id, name, phone, email }) => {
+    await updateContact(id, name, phone, email);
+    await loadData();
+    setEditModalVisible(false);
+  };
 
   const handleToggleFavorite = async (item) => {
     await toggleFavorite(item.id, Number(item.favorite));
@@ -35,6 +50,17 @@ export default function IndexPage() {
         <Text style={{ fontSize: 18, fontWeight: "600" }}>{item.name}</Text>
         <Text style={{ color: "gray" }}>{item.phone}</Text>
       </View>
+
+      {/* Nút sửa */}
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedContact(item);
+          setEditModalVisible(true);
+        }}
+        style={{ marginRight: 16 }}
+      >
+        <Text style={{ fontSize: 16, color: "#2563eb" }}>Sửa</Text>
+      </TouchableOpacity>
 
       {/* Toggle favorite */}
       <TouchableOpacity onPress={() => handleToggleFavorite(item)}>
@@ -68,6 +94,14 @@ export default function IndexPage() {
         data={contacts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
+      />
+
+      {/* Modal chỉnh sửa */}
+      <EditContactModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        onSubmit={handleEditContact}
+        contact={selectedContact}
       />
     </View>
   );

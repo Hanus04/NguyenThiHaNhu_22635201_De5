@@ -89,3 +89,12 @@ export const toggleFavorite = async (id, currentValue) => {
 
   return newValue;
 };
+export const updateContact = async (id, name, phone, email) => {
+  const db = await getDb();
+  await db.runAsync(
+    `UPDATE contacts 
+     SET name = ?, phone = ?, email = ?
+     WHERE id = ?`,
+    [name, phone, email, id]
+  );
+};
