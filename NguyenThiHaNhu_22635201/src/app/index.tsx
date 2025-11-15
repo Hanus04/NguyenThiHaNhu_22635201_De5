@@ -1,5 +1,12 @@
-import { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
+import { useEffect, useState, useMemo } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+} from "react-native";
 import {
   initContactsTable,
   getAllContacts,
@@ -14,6 +21,9 @@ export default function IndexPage() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
 
+  const [search, setSearch] = useState("");
+  const [showFavoriteOnly, setShowFavoriteOnly] = useState(false);
+
   const loadData = async () => {
     await initContactsTable();
     const data = await getAllContacts();
@@ -23,6 +33,18 @@ export default function IndexPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const filteredContacts = useMemo(() => {
+    return contacts.filter((c) => {
+      const matchText =
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.phone.includes(search);
+
+      const matchFavorite = showFavoriteOnly ? Number(c.favorite) === 1 : true;
+
+      return matchText && matchFavorite;
+    });
+  }, [contacts, search, showFavoriteOnly]);
 
   const handleToggleFavorite = async (item) => {
     await toggleFavorite(item.id, Number(item.favorite));
@@ -84,7 +106,7 @@ export default function IndexPage() {
         <Text style={{ fontSize: 16, color: "red" }}>Xóa</Text>
       </TouchableOpacity>
 
-      {/* Favorite toggle */}
+      {/* Favorite */}
       <TouchableOpacity onPress={() => handleToggleFavorite(item)}>
         <Text
           style={{
@@ -112,12 +134,38 @@ export default function IndexPage() {
         Danh sách liên hệ
       </Text>
 
+      {/* SEARCH + FILTER */}
+      <View style={{ paddingHorizontal: 16, marginBottom: 10 }}>
+        <TextInput
+          placeholder="Tìm kiếm theo tên hoặc số điện thoại..."
+          value={search}
+          onChangeText={setSearch}
+          style={{
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 8,
+            padding: 10,
+            marginBottom: 10,
+          }}
+        />
+
+        <TouchableOpacity
+          onPress={() => setShowFavoriteOnly(!showFavoriteOnly)}
+          style={{ flexDirection: "row", alignItems: "center" }}
+        >
+          <Text style={{ marginRight: 6 }}>{showFavoriteOnly ? "☑" : "☐"}</Text>
+          <Text>Chỉ hiển thị liên hệ yêu thích</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* DANH SÁCH */}
       <FlatList
-        data={contacts}
+        data={filteredContacts}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
       />
 
+      {/* MODAL SỬA */}
       <EditContactModal
         visible={editModalVisible}
         onClose={() => setEditModalVisible(false)}
