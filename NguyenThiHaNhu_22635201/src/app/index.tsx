@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
 import {
   initContactsTable,
   getAllContacts,
   toggleFavorite,
   updateContact,
+  deleteContact,
 } from "../db";
 import EditContactModal from "../components/EditContactModal";
 
@@ -23,16 +24,29 @@ export default function IndexPage() {
     loadData();
   }, []);
 
-  // Handle save when editing
+  const handleToggleFavorite = async (item) => {
+    await toggleFavorite(item.id, Number(item.favorite));
+    loadData();
+  };
+
   const handleEditContact = async ({ id, name, phone, email }) => {
     await updateContact(id, name, phone, email);
     await loadData();
     setEditModalVisible(false);
   };
 
-  const handleToggleFavorite = async (item) => {
-    await toggleFavorite(item.id, Number(item.favorite));
-    loadData();
+  const handleDelete = (item) => {
+    Alert.alert("Xác nhận", `Bạn có chắc muốn xóa liên hệ "${item.name}"?`, [
+      { text: "Hủy", style: "cancel" },
+      {
+        text: "Xóa",
+        style: "destructive",
+        onPress: async () => {
+          await deleteContact(item.id);
+          loadData();
+        },
+      },
+    ]);
   };
 
   const renderItem = ({ item }) => (
@@ -62,7 +76,15 @@ export default function IndexPage() {
         <Text style={{ fontSize: 16, color: "#2563eb" }}>Sửa</Text>
       </TouchableOpacity>
 
-      {/* Toggle favorite */}
+      {/* Nút xóa */}
+      <TouchableOpacity
+        onPress={() => handleDelete(item)}
+        style={{ marginRight: 16 }}
+      >
+        <Text style={{ fontSize: 16, color: "red" }}>Xóa</Text>
+      </TouchableOpacity>
+
+      {/* Favorite toggle */}
       <TouchableOpacity onPress={() => handleToggleFavorite(item)}>
         <Text
           style={{
@@ -96,7 +118,6 @@ export default function IndexPage() {
         renderItem={renderItem}
       />
 
-      {/* Modal chỉnh sửa */}
       <EditContactModal
         visible={editModalVisible}
         onClose={() => setEditModalVisible(false)}

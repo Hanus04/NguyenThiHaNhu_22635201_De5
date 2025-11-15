@@ -98,3 +98,7 @@ export const updateContact = async (id, name, phone, email) => {
     [name, phone, email, id]
   );
 };
+export const deleteContact = async (id) => {
+  const db = await getDb();
+  await db.runAsync("DELETE FROM contacts WHERE id = ?", [id]);
+};
