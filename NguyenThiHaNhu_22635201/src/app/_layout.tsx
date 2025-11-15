@@ -1,15 +1,20 @@
 import { Slot } from "expo-router";
 import { useEffect } from "react";
-import { getDb } from "../db";
+import { initContactsTable } from "../db";
+import "../global.css";
 
 export default function RootLayout() {
   useEffect(() => {
-    const connect = async () => {
-      const db = await getDb();
-      console.log("✅ SQLite connected:", db);
+    const setup = async () => {
+      try {
+        await initContactsTable();
+        console.log("✅ Contacts table ready");
+      } catch (err) {
+        console.log("❌ DB init error:", err);
+      }
     };
 
-    connect();
+    setup();
   }, []);
 
   return <Slot />;
